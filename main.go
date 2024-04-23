@@ -9,10 +9,9 @@ import (
 	"path/filepath"
 	"time"
 
-	. "github.com/zls3434/m7s-engine/v4"
+	"github.com/zls3434/m7s-engine/v4"
 	"github.com/zls3434/m7s-engine/v4/log"
 	"github.com/zls3434/m7s-engine/v4/util"
-	. "github.com/zls3434/m7s-engine/v4/util"
 )
 
 type FileInfo struct {
@@ -31,11 +30,11 @@ type LogRotateConfig struct {
 	splitFunc   func() bool
 }
 
-var _ = InstallPlugin(&LogRotateConfig{})
+var _ = engine.InstallPlugin(&LogRotateConfig{})
 
 func (config *LogRotateConfig) OnEvent(event any) {
 	switch event.(type) {
-	case FirstConfig:
+	case engine.FirstConfig:
 		if config.Size > 0 {
 			config.splitFunc = config.splitBySize
 		} else {
@@ -83,7 +82,7 @@ func (l *LogRotateConfig) Write(data []byte) (n int, err error) {
 }
 
 func (l *LogRotateConfig) API_tail(w http.ResponseWriter, r *http.Request) {
-	writer := NewSSE(w, r.Context())
+	writer := util.NewSSE(w, r.Context())
 	log.AddWriter(writer)
 	<-r.Context().Done()
 	log.DeleteWriter(writer)
@@ -104,9 +103,9 @@ func (l *LogRotateConfig) API_list(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if err != nil {
-		ReturnError(APIErrorOpen, err.Error(), w, r)
+		util.ReturnError(util.APIErrorOpen, err.Error(), w, r)
 	} else {
-		ReturnOK(w, r)
+		util.ReturnOK(w, r)
 	}
 }
 
@@ -127,8 +126,8 @@ func (l *LogRotateConfig) API_open(w http.ResponseWriter, r *http.Request) {
 		_, err = io.Copy(w, file)
 	}
 	if err != nil {
-		ReturnError(APIErrorOpen, err.Error(), w, r)
+		util.ReturnError(util.APIErrorOpen, err.Error(), w, r)
 	} else {
-		ReturnOK(w, r)
+		util.ReturnOK(w, r)
 	}
 }
